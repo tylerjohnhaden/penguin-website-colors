@@ -1,18 +1,18 @@
-from custom_tools import get_sites, load_drivers
+from custom_tools import load_sites, load_drivers, load_config, close_drivers
 
-CHROMEDRIVER_PATH = 'C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/chromedriver.exe'
-UBLOCK_EXTENSION_PATH = 'C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/uBlock0.chromium'
-NUMBER_OF_DRIVERS = 10
+# initialization
+number_of_drivers = 10
+chrome, regex, templates = load_config()
+websites = load_sites(0, 9)
+drivers = load_drivers(number_of_drivers, chrome['driver_path'], chrome['ublock_path'])
 
-websites = get_sites(0, 9)
-drivers = load_drivers(NUMBER_OF_DRIVERS, CHROMEDRIVER_PATH, UBLOCK_EXTENSION_PATH)
-
+# run code
 try:
-    for i in xrange(NUMBER_OF_DRIVERS):
+    for i in xrange(number_of_drivers):
         drivers[i].get(websites[i])
         drivers[i].save_screenshot('temp/' + str(i) + '_img.png')
 except Exception:
     pass
 
-for d in drivers:
-    d.quit()
+# clean-up
+close_drivers(drivers)

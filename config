@@ -1,0 +1,15 @@
+# driver settings
+[chrome]
+driver_path=C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/chromedriver.exe
+ublock_path=C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/uBlock0.chromium
+
+# these file types were invented for this project
+# "adjacency list files" = "*.adj"
+# "diff/pair/hex list files" = "*.dph"
+[regex]
+adjacency_convention=^(?P<filename>.*)\.adj$
+dph_convention=^(?P<filename>.*)\.dph$
+
+[templates]
+adjacency_template=%s.adj
+dph_template=%s.dph

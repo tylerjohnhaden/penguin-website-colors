@@ -1,2 +1,2 @@
 # penguin-website-colors
-### by: Jeet Gajjar and Tyler Haden
+### by: Tyler Haden and Jeet Gajjar
