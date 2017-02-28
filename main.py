@@ -10,15 +10,14 @@ drivers = load_drivers(number_of_drivers, chrome['driver_path'], chrome['ublock_
 print "Drivers loaded in " + str(time.time() - LOAD_START)
 
 # run code
-SCREENSHOT_START = time.time()
+SCREEN_SHOT_START = time.time()
 try:
     for i in xrange(number_of_drivers):
         drivers[i].get(websites[i])
         drivers[i].save_screenshot('temp/' + str(i) + '_img.png')
 except Exception:
     pass
-print "Screen shots taken in " + str(time.time() - SCREENSHOT_START)
-
+print "Screen shots taken in " + str(time.time() - SCREEN_SHOT_START)
 
 # clean-up
 close_drivers(drivers)

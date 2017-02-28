@@ -2,8 +2,11 @@
 # TODO: Thread objects for drivers, parsers, file manipulation
 # TODO: Add logging functionality
 # TODO: Missed site handlers
+# TODO: Make chromedriver minimized on load and render, optimize for headlessness
 
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
+PROTOCOL_PREFIX = 'http://'
+CONFIG_FILENAME = 'config.ini'
 
 
 # TODO: use config file to get URL list path
@@ -14,7 +17,7 @@ def load_sites(a, b, url_list_path, filename_regex):
     with open(url_list_path, 'r') as f:
         for i, l in enumerate(f):
             if a <= i <= b:
-                site_list.append('http://' + match(filename_regex, l).group('domain'))
+                site_list.append(PROTOCOL_PREFIX + match(filename_regex, l).group('domain'))
     return site_list
 
 
@@ -43,9 +46,10 @@ def load_config():
     from os import getcwd
     config = ConfigParser()
     try:
-        with open('config.ini') as cf:
+        with open(CONFIG_FILENAME) as cf:
             config.readfp(cf)
-            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates")), dict(config.items("urls"))
+            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates")), dict(
+                config.items("urls"))
     except IOError:
         raise NoConfigFileError(getcwd())
 
@@ -72,23 +76,41 @@ class NoConfigFileError(Exception):
 
 
 def convert_adjacency_to_dph(filename_tuple):
+    # read in file, parse header, parse adjacency list
     header, adj_list = parse_adjacency_file(filename_tuple[0], filename_tuple[1])
+
+    # convert adjacency list to list of tuples
     sorted_pair_list = convert_adjlist_to_pairlist(header, adj_list)
+
+    # 'difference'-compress list of tuples
     difference_compressed_pair_list = difference_compression(sorted_pair_list)
+
+    # write list of tuples to file
     write_pair_list_hex(filename_tuple[2], header, difference_compressed_pair_list)
 
 
 # TODO: add header value catch statements
 def convert_dph_to_adjacency(filename_tuple):
+    # read in file, parse header, parse list of tuples
     header, diff_pair_hex_list = parse_dph_file(filename_tuple[0], filename_tuple[1])
+
+    # 'difference'-decompress list of tuples
     difference_decompressed_pair_list = difference_decompression(diff_pair_hex_list)
+
+    # convert list of tuples to adjacency list
     adj_list = convert_pairlist_to_adjlist(header, difference_decompressed_pair_list)
+
+    # write adjacency list to file
     write_adj_list(filename_tuple[2], header, adj_list)
 
 
 def write_adj_list(filename, head, adj_list):
+    # open new file
     with open(filename, "w") as adj_file:
+        # write header
         adj_file.write(str(head) + "\n")
+
+        # write adjacency list
         for neighbors in adj_list:
             adj_file.write(str(neighbors) + "\n")
 
@@ -104,21 +126,30 @@ def write_pair_list_hex(filename, head, pair_list):
 
 def hex_blanking_format(t, d):
     s = ""
+
+    # if first element is 0, write blank, otherwise write the first element
     if t[0] == 0:
         s += d
     else:
         s += str(hex(t[0])) + d
+
+    # if second element is 0, write blank, otherwise write the second element
     if t[1] == 0:
         s += d
     else:
         s += str(hex(t[1])) + d
+
+    # if third element is 1, write blank, otherwise write the third element
     if t[2] != 1:
         s += str(hex(t[2]))
+
+    # remove hex denotation
     return s.replace("0x", "")
 
 
 def difference_compression(pair_list):
-    last_a = last_b = 0
+    last_a = 0
+    last_b = 0
     for i in xrange(len(pair_list)):
         temp = pair_list[i]
         pair_list[i] = (temp[0] - last_a, temp[1] - last_b, temp[2])
@@ -128,7 +159,8 @@ def difference_compression(pair_list):
 
 
 def difference_decompression(pair_list):
-    last_a = last_b = 0
+    last_a = 0
+    last_b = 0
     for i in xrange(len(pair_list)):
         temp = pair_list[i]
         pair_list[i] = (temp[0] + last_a, temp[1] + last_b, temp[2])
