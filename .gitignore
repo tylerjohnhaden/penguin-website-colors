@@ -17,4 +17,4 @@
 *.ini
 
 #Ignore temp downloaded files
-/temp/*.png
+/temp/
