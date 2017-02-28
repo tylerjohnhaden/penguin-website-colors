@@ -14,7 +14,7 @@
 
 
 #main program config
-.idea/**/config.ini
+/config.ini
 
 #Ignore temp downloaded files
 .idea/**/temp
