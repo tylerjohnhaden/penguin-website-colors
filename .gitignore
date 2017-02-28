@@ -14,7 +14,7 @@
 
 
 #main program config
-/config.ini
+*.ini
 
 #Ignore temp downloaded files
-.idea/**/temp
+/temp/*.png
