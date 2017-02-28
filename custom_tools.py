@@ -67,7 +67,7 @@ class NoConfigFileError(Exception):
     """Raise when no config file is found"""
 
     def __init__(self, path, *args):
-        self.message = "No config file found in the directory : \"" + path + "\""
+        self.message = "No config.ini file found in the directory : \"" + path + "\""
         super(NoConfigFileError, self).__init__(self.message, *args)
 
 
