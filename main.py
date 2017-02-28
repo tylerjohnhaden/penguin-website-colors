@@ -3,7 +3,7 @@ import time
 
 # initialization
 number_of_drivers = 5
-chrome, regex, templates, urls = load_config()
+chrome, urls, adj, dph = load_config()
 websites = load_sites(0, 4, urls['url_list_path'], urls['url_regex'])
 LOAD_START = time.time()
 drivers = load_drivers(number_of_drivers, chrome['driver_path'], chrome['ublock_path'])

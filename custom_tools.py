@@ -4,9 +4,10 @@
 # TODO: Missed site handlers
 
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
+PROTOCOL_PREFIX = 'http://'
+CONFIG_PATH = 'config/config.ini'
 
 
-# TODO: use config file to get URL list path
 def load_sites(a, b, url_list_path, filename_regex):
     from re import match
 
@@ -14,7 +15,7 @@ def load_sites(a, b, url_list_path, filename_regex):
     with open(url_list_path, 'r') as f:
         for i, l in enumerate(f):
             if a <= i <= b:
-                site_list.append('http://' + match(filename_regex, l).group('domain'))
+                site_list.append(PROTOCOL_PREFIX + match(filename_regex, l).group('domain'))
     return site_list
 
 
@@ -29,7 +30,11 @@ def load_drivers(n, chromedriver_path, *extension_args):
 
     drivers = []
     for i in xrange(n):
-        drivers += [Chrome(executable_path=chromedriver_path, chrome_options=options)]
+        d = Chrome(executable_path=chromedriver_path, chrome_options=options)
+        d.maximize_window()
+        d.set_window_position(1300, 0)
+        drivers += [d]
+
     return drivers
 
 
@@ -43,9 +48,10 @@ def load_config():
     from os import getcwd
     config = ConfigParser()
     try:
-        with open('config/config.ini') as cf:
+        with open(CONFIG_PATH) as cf:
             config.readfp(cf)
-            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates")), dict(config.items("urls"))
+            return dict(config.items("chrome")), dict(config.items("urls")), dict(config.items("adj")), dict(
+                config.items("dph"))
     except IOError:
         raise NoConfigFileError(getcwd())
 
