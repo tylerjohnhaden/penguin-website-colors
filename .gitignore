@@ -11,3 +11,7 @@
 .idea/**/sqlDataSources.xml
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
+
+
+#config file for each user:
+.idea/**/config.ini
