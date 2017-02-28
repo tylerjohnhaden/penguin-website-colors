@@ -13,7 +13,8 @@
 .idea/**/uiDesigner.xml
 
 
-#config file for each user:
+#main program config
 .idea/**/config.ini
 
-#main program config
+#Ignore temp downloaded files
+.idea/**/temp
