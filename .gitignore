@@ -15,3 +15,5 @@
 
 #config file for each user:
 .idea/**/config.ini
+
+#main program config

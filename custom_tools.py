@@ -7,18 +7,14 @@ COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
 
 
 # TODO: use config file to get URL list path
-def load_sites(a, b):
+def load_sites(a, b, url_list_path, filename_regex):
     from re import match
-    # change to file containing urls
-    URL_LIST_PATH = 'C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/top-1m.csv'
-    # change if format of url list changes
-    FILENAME_REGEX = '^.*,(?P<domain>.*)\n$'
 
     site_list = []
-    with open(URL_LIST_PATH, 'r') as f:
+    with open(url_list_path, 'r') as f:
         for i, l in enumerate(f):
             if a <= i <= b:
-                site_list.append('http://' + match(FILENAME_REGEX, l).group('domain'))
+                site_list.append('http://' + match(filename_regex, l).group('domain'))
     return site_list
 
 
@@ -49,7 +45,7 @@ def load_config():
     try:
         with open('config') as cf:
             config.readfp(cf)
-            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates"))
+            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates")), dict(config.items("urls"))
     except IOError:
         raise NoConfigFileError(getcwd())
 

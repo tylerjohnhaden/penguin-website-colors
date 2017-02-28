@@ -3,6 +3,12 @@
 driver_path=C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/chromedriver.exe
 ublock_path=C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/uBlock0.chromium
 
+#url list settings
+[urls]
+url_list_path=C:/Users/JuliusCeasar/Desktop/chromedriver_test_spike/top-1m.csv
+url_regex=^.*,(?P<domain>.*)\n$
+
+
 # these file types were invented for this project
 # "adjacency list files" = "*.adj"
 # "diff/pair/hex list files" = "*.dph"
