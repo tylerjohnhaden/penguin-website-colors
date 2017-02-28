@@ -43,7 +43,7 @@ def load_config():
     from os import getcwd
     config = ConfigParser()
     try:
-        with open('config') as cf:
+        with open('config.ini') as cf:
             config.readfp(cf)
             return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates")), dict(config.items("urls"))
     except IOError:
