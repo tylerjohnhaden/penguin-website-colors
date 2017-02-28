@@ -14,8 +14,7 @@
 
 
 #main program config
-*.ini
+/config/
 
 #Ignore temp downloaded files
 /temp/
-/config/
