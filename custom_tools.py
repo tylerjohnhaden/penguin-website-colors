@@ -43,7 +43,7 @@ def load_config():
     from os import getcwd
     config = ConfigParser()
     try:
-        with open('config.ini') as cf:
+        with open('config/config.ini') as cf:
             config.readfp(cf)
             return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates")), dict(config.items("urls"))
     except IOError:
@@ -67,7 +67,7 @@ class NoConfigFileError(Exception):
     """Raise when no config file is found"""
 
     def __init__(self, path, *args):
-        self.message = "No config.ini file found in the directory : \"" + path + "\""
+        self.message = "No config/config.ini file found in the directory : \"" + path + "\""
         super(NoConfigFileError, self).__init__(self.message, *args)
 
 
