@@ -1,6 +1,12 @@
+# TODO: BeautifulSoup handlers
+# TODO: Thread objects for drivers, parsers, file manipulation
+# TODO: Add logging functionality
+# TODO: Missed site handlers
+
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
 
 
+# TODO: use config file to get URL list path
 def load_sites(a, b):
     from re import match
     # change to file containing urls
@@ -34,6 +40,18 @@ def load_drivers(n, chromedriver_path, *extension_args):
 def close_drivers(driver_list):
     for driver in driver_list:
         driver.quit()
+
+
+def load_config():
+    from ConfigParser import ConfigParser
+    from os import getcwd
+    config = ConfigParser()
+    try:
+        with open('config') as cf:
+            config.readfp(cf)
+            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates"))
+    except IOError:
+        raise NoConfigFileError(getcwd())
 
 
 # TODO: create "InvalidFileHeaderFormat" Exception
@@ -178,15 +196,3 @@ def parse_dph_file(imagename, filename):
                 c = int(split_line[2], 16)
             dph_list += [(a, b, c)]
         return header_dictionary, dph_list
-
-
-def load_config():
-    from ConfigParser import ConfigParser
-    from os import getcwd
-    config = ConfigParser()
-    try:
-        with open('config') as cf:
-            config.readfp(cf)
-            return dict(config.items("chrome")), dict(config.items("regex")), dict(config.items("templates"))
-    except IOError:
-        raise NoConfigFileError(getcwd())
