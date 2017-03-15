@@ -1,5 +1,5 @@
 # TODO: BeautifulSoup handlers
-# TODO: Thread objects for drivers, parsers, file manipulation
+# TODO: Thread objects for drivers, parsers, file manipulation, load balancer
 # TODO: Add logging functionality
 # TODO: Missed site handlers
 
