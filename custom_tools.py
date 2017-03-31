@@ -13,9 +13,9 @@ def load_sites(a, b, url_list_path, filename_regex):
 
     site_list = []
     with open(url_list_path, 'r') as f:
-        for i, l in enumerate(f):
+        for i, line in enumerate(f):
             if a <= i <= b:
-                site_list.append(PROTOCOL_PREFIX + match(filename_regex, l).group('domain'))
+                site_list.append(PROTOCOL_PREFIX + match(filename_regex, line).group('domain'))
     return site_list
 
 
