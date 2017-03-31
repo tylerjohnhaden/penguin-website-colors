@@ -8,14 +8,17 @@ PROTOCOL_PREFIX = 'http://'
 CONFIG_PATH = 'config/config.ini'
 
 
-def load_sites(a, b, url_list_path, filename_regex):
-    from re import match
-
+def load_sites(a, b, url_list_path):
     site_list = []
     with open(url_list_path, 'r') as f:
         for i, line in enumerate(f):
-            if a <= i <= b:
-                site_list.append(PROTOCOL_PREFIX + match(filename_regex, line).group('domain'))
+            if a <= i < b:
+                full_domain = line.rstrip('\n')
+                base_domain = full_domain.split('.')[0]
+
+                site_list.append((PROTOCOL_PREFIX + full_domain, base_domain))
+            elif i >= b:
+                break
     return site_list
 
 
