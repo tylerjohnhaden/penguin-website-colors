@@ -4,7 +4,7 @@ from os import remove
 from os.path import getsize
 
 # initialization
-number_of_drivers = 10
+number_of_drivers = 3
 chrome, urls, adj, dph = load_config()
 
 
@@ -22,26 +22,26 @@ data_size_sum = 0
 # run code
 SCREEN_SHOT_START = time()
 try:
-    while True:
-        for driver in drivers:
-            website = websites.pop(0)
+    for driver in drivers:
+        website = websites.pop(0)
 
-            site_address = website[0]
-            site_name = website[1]
-            screen_shot_file = 'temp/' + '%s.png' % site_name
-            dph_file = 'data/' + dph['dph_template'] % site_name
+        site_address = website[0]
+        site_name = website[1]
+        screen_shot_file = 'temp/' + '%s.png' % site_name
+        dph_file = 'data/' + dph['dph_template'] % site_name
 
-            driver.get(site_address)
-            driver.save_screenshot(screen_shot_file)
+        driver.get(site_address)
+        driver.save_screenshot(screen_shot_file)
 
-            data_size = imagefile_to_dphfile(screen_shot_file, site_name, dph_file)
-            data_size_sum += data_size
-            image_size = getsize(screen_shot_file)
-            image_size_sum += image_size
+        data_size = imagefile_to_dphfile(screen_shot_file, site_name, dph_file)
+        data_size_sum += data_size
+        image_size = getsize(screen_shot_file)
+        image_size_sum += image_size
 
-            print '    [' + site_name + ']: Image size =', image_size, ', Data size =', data_size
+        print '    [' + site_name + ']: Image size =', image_size, ', Data size =', data_size
 
-            remove(screen_shot_file)
+        remove(screen_shot_file)
+
 except Exception:
     pass
 SCREEN_SHOT_TIME = time() - SCREEN_SHOT_START
