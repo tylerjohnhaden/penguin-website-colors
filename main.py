@@ -5,7 +5,7 @@ from os.path import getsize
 
 # initialization
 number_of_drivers = 3
-chrome, urls, adj, dph = load_config()
+chrome, urls, adj, dph = load_config('config/config.ini')
 
 
 # change config url_list_path to \penguin-website-colors\scrubbed_top-1m_3-15-17.csv!

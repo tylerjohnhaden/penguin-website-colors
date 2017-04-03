@@ -4,8 +4,6 @@
 # TODO: Missed site handlers
 
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
-PROTOCOL_PREFIX = 'http://'
-CONFIG_PATH = 'config/config.ini'
 
 
 def load_sites(a, b, url_list_path):
@@ -16,7 +14,7 @@ def load_sites(a, b, url_list_path):
                 full_domain = line.rstrip('\n')
                 base_domain = full_domain.split('.')[0]
 
-                site_list.append((PROTOCOL_PREFIX + full_domain, base_domain))
+                site_list.append(('http://' + full_domain, base_domain))
             elif i >= b:
                 break
     return site_list
@@ -46,12 +44,12 @@ def close_drivers(driver_list):
         driver.quit()
 
 
-def load_config():
+def load_config(config_path):
     from ConfigParser import ConfigParser
     from os import getcwd
     config = ConfigParser()
     try:
-        with open(CONFIG_PATH) as cf:
+        with open(config_path) as cf:
             config.readfp(cf)
             return dict(config.items("chrome")), dict(config.items("urls")), dict(config.items("adj")), dict(
                 config.items("dph"))
