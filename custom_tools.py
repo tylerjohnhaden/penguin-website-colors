@@ -20,6 +20,7 @@ def load_sites(a, b, url_list_path):
     return site_list
 
 
+'''
 def load_drivers(n, chromedriver_path, *extension_args):
     from selenium.webdriver import Chrome
     options = None
@@ -42,6 +43,7 @@ def load_drivers(n, chromedriver_path, *extension_args):
 def close_drivers(driver_list):
     for driver in driver_list:
         driver.quit()
+'''
 
 
 def load_config(config_path):
