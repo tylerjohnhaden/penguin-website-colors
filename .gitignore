@@ -16,6 +16,9 @@
 #main program config
 /config/
 
-#Ignore temp downloaded files
+#Ignore temp and experiment data
 /temp/
 /data/
+
+#Ignore static files, should be downloaded manually
+/static/

@@ -1,17 +1,17 @@
-from custom_tools import load_sites, load_config
 from time import time
-from custom_multithreading import ChromeManager
+from lib.custom_tools import load_sites, load_config
+from lib.custom_multithreading import ChromeManager
 
 TOTAL_START = time()
 
 # initialization
 INIT_START = time()
-number_of_drivers = 3
+number_of_drivers = 15
 timeout = 30
 
 chrome, urls, adj, dph = load_config('config/config.ini')
-chrome_manager = ChromeManager(0, load_sites(1000, 1006, urls['url_list_path']), logging='VERBOSE')
-chrome_manager.load_drivers(number_of_drivers, chrome['driver_path'], timeout, chrome['ublock_path'])
+chrome_manager = ChromeManager(0, load_sites(2000, 2150, urls['url_list_path']), logging='VERBOSE')
+chrome_manager.load_drivers(number_of_drivers, chrome['driver_path'], chrome['ublock_path'])
 print 'Initialization time = %f seconds' % (time() - INIT_START)
 
 # run code
