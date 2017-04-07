@@ -39,6 +39,3 @@ with ZipFile(urlretrieve(url)[0], 'r') as zip_object:
 new_count = len(overlap_protection)
 reduction = 100.0 * (1.0 - (1.0 * new_count / old_count))
 print 'Condensed %d urls into %d in %.3f seconds (%.3f%% reduction)' % (old_count, new_count, time() - START, reduction)
-
-# add new file to git repo
-system('git add %s' % new_file)
