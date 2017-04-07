@@ -8,11 +8,10 @@
     line in new list = 'google.co.uk'
 """
 
+from datetime import datetime
 from urllib import urlretrieve
 from zipfile import ZipFile
-from datetime import datetime
 from time import time
-from os import system
 
 url = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
 current_date = datetime.now()
