@@ -1,4 +1,5 @@
 from threading import Thread
+from psutil import cpu_percent
 
 
 class DataProcessor(Thread):
@@ -48,7 +49,7 @@ class ChromeManager(Thread):
         elif self.logging == 'VERBOSE':
             print strftime("%c"), ": CHROME MANAGER THREAD (" + str(self.chrome_manager_id) + ") :", message
 
-    def load_drivers(self, n, chromedriver_path, *extension_args):
+    def load_drivers(self, n, timeout, path, extensions):
         if len(self.drivers) != 0:
             self.log('Tried loading drivers for a second time')
             return False
@@ -56,16 +57,16 @@ class ChromeManager(Thread):
             raise AttributeError('n has to be positive')
 
         options = None
-        if len(extension_args) > 0:
+        if len(extensions) > 0:
             from selenium.webdriver.chrome.options import Options
             options = Options()
-            for extension in extension_args:
+            for extension in extensions:
                 options.add_argument('load-extension=' + extension)
             options.add_argument('window-size=1300,750')
-            # options.add_argument('window-position=2000,0')
+            options.add_argument('window-position=2000,0')
 
         for driver_id in xrange(n):
-            self.drivers.append(DriverThread(driver_id, chromedriver_path, options))
+            self.drivers.append(DriverThread(driver_id, path, options, timeout=timeout))
         return True
 
     def start_all_drivers(self):
@@ -89,7 +90,8 @@ class ChromeManager(Thread):
         count = 0
         while len(self.websites) > 0:
             if count == 5:
-                self.log('UPDATE: %d websites left to go' % len(self.websites), 'VERBOSE')
+                self.log(('UPDATE: %d websites left to go' % len(self.websites)) +
+                         ("  CPU: %f" % cpu_percent(1)), 'VERBOSE')
                 count = 0
             else:
                 count += 1
@@ -115,14 +117,15 @@ class ChromeManager(Thread):
 
 
 class DriverThread(Thread):
-    def __init__(self, driver_thread_id, chrome_path, options):
+    def __init__(self, driver_thread_id, chrome_path, options, timeout=-1):
         from selenium.webdriver import Chrome
         Thread.__init__(self)
         self.driver_thread_id = driver_thread_id
 
         # Chrome options and initialization
         self.chrome_driver = Chrome(executable_path=chrome_path, chrome_options=options)
-        # self.chrome_driver.set_page_load_timeout(30)  # TODO: don't make hard coded timeout
+        if timeout > 0:
+            self.chrome_driver.set_page_load_timeout(timeout)
 
         self.current_website = ''
         self.current_target_file = ''

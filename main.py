@@ -2,17 +2,16 @@ from time import time
 from lib.custom_tools import load_sites, load_config
 from lib.custom_multithreading import ChromeManager
 
-TOTAL_START = time()
-
-# initialization
-INIT_START = time()
-number_of_drivers = 15
+number_of_drivers = 3
 timeout = 30
 
+# initialization
+print 'Starting thread and driver initialization'
+START = time()
 chrome, urls, adj, dph = load_config('config/config.ini')
-chrome_manager = ChromeManager(0, load_sites(2000, 2150, urls['url_list_path']), logging='VERBOSE')
-chrome_manager.load_drivers(number_of_drivers, chrome['driver_path'], chrome['ublock_path'])
-print 'Initialization time = %f seconds' % (time() - INIT_START)
+chrome_manager = ChromeManager(0, load_sites(2000, 2010, urls['url_list_path']), logging='VERBOSE')
+chrome_manager.load_drivers(number_of_drivers, timeout, path=chrome['driver_path'], extensions=[chrome['ublock_path']])
+print 'Initialization time = %f seconds' % (time() - START)
 
 # run code
 try:
@@ -22,4 +21,4 @@ except Exception:
     chrome_manager.emergency_stop()
 
 # clean-up
-print 'Total time = %f seconds' % (time() - TOTAL_START)
+print 'Total time = %f seconds' % (time() - START)
