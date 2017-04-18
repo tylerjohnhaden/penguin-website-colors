@@ -1,5 +1,5 @@
 from ConfigParser import ConfigParser
-from os import getcwd
+from os import getcwd, listdir
 from ast import literal_eval
 from os.path import getsize
 
@@ -11,9 +11,19 @@ from PIL import Image
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
 
 
-def load_sites(a, b, url_list_path):
+def load_sites(a, b, website_file_option='LATEST'):
+    available_website_files = listdir('static/websites')
+    if len(available_website_files) == 0:
+        raise IOError('No website list versions found under \'static/websites\'')
+    if website_file_option == 'LATEST':
+        website_path = 'static/websites/%s/websites.csv' % available_website_files[-1]
+    else:
+        if 'version_%s' % website_file_option in available_website_files:
+            website_path = 'static/websites/version_%s/websites.csv' % website_file_option
+        else:
+            raise IOError('No such directory \'static/websites/version_%s\' found' % website_file_option)
     site_list = []
-    with open(url_list_path, 'r') as f:
+    with open(website_path, 'r') as f:
         for i, line in enumerate(f):
             if a <= i < b:
                 full_domain = line.rstrip('\n')

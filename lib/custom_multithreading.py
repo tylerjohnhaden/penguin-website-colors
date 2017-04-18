@@ -1,7 +1,7 @@
 from threading import Thread
 from psutil import cpu_percent
 from time import strftime, sleep
-from os import remove
+from os import remove, listdir, getcwd
 
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import Chrome
@@ -39,8 +39,8 @@ class INDEPENDENT_DataProcessor(Thread):
             sleep(.3)
             for current in self.working_list[:]:
                 self.log('processing ' + current)
-                self.process_image('temp/%s.png' % current, current, 'data/%s.dph' % current)
-                self.process_source('temp/%s.html' % current, current, 'data/%s.tag' % current)
+                self.process_image('temp/%s.png' % current, current, 'data/color/%s.dph' % current)
+                self.process_source('temp/%s.html' % current, current, 'data/tags/%s.html' % current)
                 self.working_list.remove(current)
 
 
@@ -61,24 +61,44 @@ class ChromeManager(Thread):
         elif self.logging == 'VERBOSE':
             print strftime("%c"), ": CHROME MANAGER THREAD (" + str(self.chrome_manager_id) + ") :", message
 
-    def load_drivers(self, n, timeout, path, extensions):
+    def load_drivers(self, n, timeout, chromedriver_option, uBlock0_option):
+        relative_path = getcwd()
         if len(self.drivers) != 0:
             self.log('Tried loading drivers for a second time')
             return False
         if n < 1:
-            raise AttributeError('n has to be positive')
+            raise ValueError('n has to be positive')
 
-        options = None
-        if len(extensions) > 0:
-            options = Options()
-            for extension in extensions:
-                options.add_argument('load-extension=' + extension)
-            options.add_argument('window-size=1300,750')
-            options.add_argument('window-position=2000,0')
+        available_uBlock0_versions = listdir('static/uBlock0')
+        if len(available_uBlock0_versions) == 0:
+            raise IOError('No uBlock versions found under \'static/uBlock0\'')
+        if uBlock0_option == 'LATEST':
+            uBlock0_path = 'static/uBlock0/%s/uBlock0.chromium' % available_uBlock0_versions[-1]
+        else:
+            if 'version_%s' % uBlock0_option in available_uBlock0_versions:
+                uBlock0_path = 'static/uBlock0/version_%s/uBlock0.chromium' % uBlock0_option
+            else:
+                raise IOError('No such directory \'static/uBlock0/version_%s\' found' % uBlock0_option)
+
+        options = Options()
+        options.add_argument('load-extension=' + relative_path + '/' + uBlock0_path)
+        options.add_argument('window-size=1300,750')
+        options.add_argument('window-position=2000,0')
+
+        available_chromedrivers_versions = listdir('static/chromedriver')
+        if len(available_chromedrivers_versions) == 0:
+            raise IOError('No chromedriver versions found under \'static/chromedriver\'')
+        if chromedriver_option == 'LATEST':
+            chromedriver_path = 'static/chromedriver/%s/chromedriver.exe' % available_chromedrivers_versions[-1]
+        else:
+            if 'version_%s' % chromedriver_option in available_chromedrivers_versions:
+                chromedriver_path = 'static/chromedriver/version_%s/chromedriver.exe' % chromedriver_option
+            else:
+                raise IOError('No such directory \'static/chromedriver/version_%s\' found' % chromedriver_option)
 
         for driver_id in xrange(n):
             self.drivers.append(
-                DriverThread(driver_id, path, options, self.processorThread.working_list, timeout=timeout))
+                DriverThread(driver_id, chromedriver_path, options, self.processorThread.working_list, timeout=timeout))
         return True
 
     def start_all_drivers(self):
@@ -129,6 +149,8 @@ class ChromeManager(Thread):
                 sleep(2.5)
 
         self.processorThread.running = False
+        while self.processorThread.is_alive():
+            sleep(2.5)
 
 
 class DriverThread(Thread):
