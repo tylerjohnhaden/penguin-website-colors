@@ -1,5 +1,10 @@
-# TODO: BeautifulSoup handlers
-# TODO: Thread objects for drivers, parsers, file manipulation, load balancer
+from ConfigParser import ConfigParser
+from os import getcwd
+from ast import literal_eval
+from os.path import getsize
+
+from PIL import Image
+
 # TODO: Add logging functionality
 # TODO: Missed site handlers
 
@@ -21,14 +26,12 @@ def load_sites(a, b, url_list_path):
 
 
 def load_config(config_path):
-    from ConfigParser import ConfigParser
-    from os import getcwd
     config = ConfigParser()
     try:
         with open(config_path) as cf:
             config.readfp(cf)
-            return dict(config.items('chrome')), dict(config.items('urls')),\
-                dict(config.items('adj')), dict(config.items('dph'))
+            return dict(config.items('chrome')), dict(config.items('urls')), \
+                   dict(config.items('adj')), dict(config.items('dph'))
     except IOError:
         raise NoConfigFileError(getcwd())
 
@@ -157,7 +160,6 @@ def convert_adjlist_to_pairlist(head, alist):
 
 
 def parse_adjacency_file(imagename, filename):
-    from ast import literal_eval
     with open(filename, 'r') as adj_file:
         header_line = adj_file.readline().replace('\n', '')
         header_dictionary = literal_eval(header_line)
@@ -170,7 +172,6 @@ def parse_adjacency_file(imagename, filename):
 
 
 def parse_dph_file(imagename, filename):
-    from ast import literal_eval
     with open(filename, 'r') as dph_file:
         header_line = dph_file.readline().replace('\n', '')
         header_dictionary = literal_eval(header_line)
@@ -203,9 +204,6 @@ def add_color_edge(a_list, a, b):
 
 # returns size of dph file
 def imagefile_to_dphfile(image_filename, imagename, dph_filename):
-    from PIL import Image
-    from os.path import getsize
-
     adjacency_list = [[] for __ in xrange(COMPRESSED_COLOR_SPACE)]
     list1 = []
     list2 = []

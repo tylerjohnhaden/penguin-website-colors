@@ -1,35 +1,47 @@
 from threading import Thread
 from psutil import cpu_percent
+from time import strftime, sleep
+from os import remove
+
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import Chrome
+from selenium.common.exceptions import TimeoutException
+
+from custom_tools import imagefile_to_dphfile
 
 
-class DataProcessor(Thread):
-    def __init__(self, data_processor_id):
+class INDEPENDENT_DataProcessor(Thread):
+    def __init__(self):
         Thread.__init__(self)
-        self.data_processor_id = data_processor_id
+        self.running = True
+        self.working_list = []
+        print "INITIALIZATION of the data processor"
 
-    def log(self, message):
-        from time import strftime
-        print strftime("%c"), ": DATA PROCESSOR THREAD (" + str(self.data_processor_id) + ") :", message
+    @staticmethod
+    def log(message):
+        print strftime("%c"), ": DATA PROCESSOR THREAD (INDEPENDENT) :", message
 
-    def process_image(self, image_file, image_name, target_file):
-        from custom_tools import imagefile_to_dphfile
-        from os import remove
-        size = imagefile_to_dphfile(image_file, image_name, target_file)
+    @staticmethod
+    def process_image(image_file, image_name, target_file):
+        imagefile_to_dphfile(image_file, image_name, target_file)
         remove(image_file)
-        return size
 
-
-class LoadBalancer(Thread):
-    def __init__(self, load_balancer_id):
-        Thread.__init__(self)
-        self.load_balancer_id = load_balancer_id
-
-    def log(self, message):
-        from time import strftime
-        print strftime("%c"), ": LOAD BALANCER THREAD (" + str(self.load_balancer_id) + ") :", message
+    @staticmethod
+    def process_source(source_file, image_name, target_file):
+        with open(source_file, 'r') as in_file:
+            with open(target_file, 'w') as out_file:
+                # TODO: Implement Beautiful soup here
+                out_file.write(in_file.read())
+        remove(source_file)
 
     def run(self):
-        pass
+        while self.running:
+            sleep(.3)
+            for current in self.working_list[:]:
+                self.log('processing ' + current)
+                self.process_image('temp/%s.png' % current, current, 'data/%s.dph' % current)
+                self.process_source('temp/%s.html' % current, current, 'data/%s.tag' % current)
+                self.working_list.remove(current)
 
 
 class ChromeManager(Thread):
@@ -39,9 +51,9 @@ class ChromeManager(Thread):
         self.websites = websites
         self.drivers = []
         self.logging = logging
+        self.processorThread = INDEPENDENT_DataProcessor()
 
     def log(self, message, verbosity='NORMAL'):
-        from time import strftime
         if self.logging == 'OFF':
             return
         elif self.logging == 'NORMAL' and verbosity == 'NORMAL':
@@ -58,7 +70,6 @@ class ChromeManager(Thread):
 
         options = None
         if len(extensions) > 0:
-            from selenium.webdriver.chrome.options import Options
             options = Options()
             for extension in extensions:
                 options.add_argument('load-extension=' + extension)
@@ -66,20 +77,22 @@ class ChromeManager(Thread):
             options.add_argument('window-position=2000,0')
 
         for driver_id in xrange(n):
-            self.drivers.append(DriverThread(driver_id, path, options, timeout=timeout))
+            self.drivers.append(
+                DriverThread(driver_id, path, options, self.processorThread.working_list, timeout=timeout))
         return True
 
     def start_all_drivers(self):
         for driver in self.drivers:
             driver.start()
+        self.processorThread.start()
 
     def emergency_stop(self):
         for driver in self.drivers:
             driver.lose_the_will_to_live()
             driver.chrome_driver.quit()
+        self.processorThread.running = False
 
     def run(self):
-        from time import sleep
 
         self.start_all_drivers()
 
@@ -98,7 +111,7 @@ class ChromeManager(Thread):
             # self.log('running')
             driver = self.drivers.pop(0)
             website = self.websites.pop()
-            if not driver.set_new_task(website[0], 'temp/%s.png' % website[1]):
+            if not driver.set_new_task(website[0], website[1]):
                 self.websites.append(website)
             self.drivers.append(driver)
             sleep(.5)
@@ -115,10 +128,11 @@ class ChromeManager(Thread):
                 self.drivers.append(driver)
                 sleep(2.5)
 
+        self.processorThread.running = False
+
 
 class DriverThread(Thread):
-    def __init__(self, driver_thread_id, chrome_path, options, timeout=-1):
-        from selenium.webdriver import Chrome
+    def __init__(self, driver_thread_id, chrome_path, options, processorPointer, timeout=-1):
         Thread.__init__(self)
         self.driver_thread_id = driver_thread_id
 
@@ -132,9 +146,9 @@ class DriverThread(Thread):
         self.busy = False
         self.i_have_the_will_to_live = True
         self.done = False
+        self.processorPointer = processorPointer
 
     def log(self, message):
-        from time import strftime
         print strftime("%c"), ": DRIVER THREAD (" + str(self.driver_thread_id) + ") :", message
 
     def set_new_task(self, website, target_file):
@@ -146,27 +160,24 @@ class DriverThread(Thread):
         return True
 
     def run(self):
-        from time import sleep
-        from selenium.common.exceptions import TimeoutException
-
         while self.i_have_the_will_to_live:
             if self.busy:
                 try:
-                    self.log('taking screen shot!')
-                    self.screenshot(self.current_website, self.current_target_file)
-                except TimeoutException as e:
+                    self.log('taking screen shot')
+                    self.chrome_driver.get(self.current_website)
+                    self.chrome_driver.save_screenshot('temp/' + self.current_target_file + '.png')
+                    with open('temp/' + self.current_target_file + '.html', 'w') as source_file:
+                        source_file.write(self.chrome_driver.page_source.encode('utf-8'))
+
+                    # send new task to processor thread
+                    self.processorPointer.append(self.current_target_file)
+                except TimeoutException:
                     self.log('Timeout on %s' % self.current_website)
                 self.busy = False
             else:
                 sleep(.5)
         self.done = True
         self.chrome_driver.quit()
-
-    def screenshot(self, website, target_file):
-        from os.path import getsize
-        self.chrome_driver.get(website)
-        self.chrome_driver.save_screenshot(target_file)
-        return getsize(target_file)
 
     def lose_the_will_to_live(self):
         self.log('I lost the will to live')
