@@ -5,7 +5,7 @@
 
 #### Setup Instructions:
 1. Clone repo
-2. Run the three update scripts in /automation or
+2. Run setup.py or create static directory and then
 find respective resources from:
  -https://chromedriver.storage.googleapis.com/index.html
  -https://github.com/gorhill/uBlock/releases/latest
