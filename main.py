@@ -1,6 +1,12 @@
+#! /usr/bin/python
+
+# TODO: Add documenation
+
 from time import time
 from lib.custom_tools import load_sites
 from lib.custom_multithreading import ChromeManager
+import os
+import shutil
 
 number_of_drivers = 15
 range_of_websites = (3000, 3200)  # this means that one website will be downloaded [0] = 'http://google.com'
@@ -10,6 +16,9 @@ timeout = 30
 chromedriver_version = 'LATEST'  # if you don't want latest, set to version number, i.e. '2.29'
 uBlock_version = 'LATEST'        # if you don't want latest, set to version number, i.e. '1.12.1'
 website_list = 'LATEST'          # if you don't want latest, set to version number, i.e. '18.04.2017'
+
+if not os.path.exists('.temp'):
+    os.makedirs('.temp')
 
 
 # initialization
@@ -26,6 +35,9 @@ try:
     chrome_manager.join()
 except Exception:
     chrome_manager.emergency_stop()
+
+if len(os.listdir('.temp')) == 0:
+    shutil.rmtree('.temp')
 
 # clean-up
 print 'Total time = %f seconds' % (time() - START)

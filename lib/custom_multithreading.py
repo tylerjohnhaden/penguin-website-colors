@@ -39,8 +39,8 @@ class INDEPENDENT_DataProcessor(Thread):
             sleep(.3)
             for current in self.working_list[:]:
                 self.log('processing ' + current)
-                self.process_image('temp/%s.png' % current, current, 'data/color/%s.dph' % current)
-                self.process_source('temp/%s.html' % current, current, 'data/tags/%s.html' % current)
+                self.process_image('.temp/%s.png' % current, current, 'data/color/%s.dph' % current)
+                self.process_source('.temp/%s.html' % current, current, 'data/tags/%s.html' % current)
                 self.working_list.remove(current)
 
 
@@ -187,8 +187,8 @@ class DriverThread(Thread):
                 try:
                     self.log('taking screen shot')
                     self.chrome_driver.get(self.current_website)
-                    self.chrome_driver.save_screenshot('temp/' + self.current_target_file + '.png')
-                    with open('temp/' + self.current_target_file + '.html', 'w') as source_file:
+                    self.chrome_driver.save_screenshot('.temp/' + self.current_target_file + '.png')
+                    with open('.temp/' + self.current_target_file + '.html', 'w') as source_file:
                         source_file.write(self.chrome_driver.page_source.encode('utf-8'))
 
                     # send new task to processor thread

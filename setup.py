@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# TODO: finish doc string:
+# TODO: finish this doc string:
 """The first script to be run in this project.
 
 If this is the first time running in this directory,
@@ -20,6 +20,7 @@ project structure. At each step, if the directory entity
 is already found, it will be skipped, unless '
 """
 
+import platform
 import sys
 import os
 import urllib
@@ -27,13 +28,13 @@ import time
 from zipfile import ZipFile
 
 STATIC_RESOURCES = {'chromedriver': {'latest': 'https://chromedriver.storage.googleapis.com/LATEST_RELEASE',
-                                     'zip': 'https://chromedriver.storage.googleapis.com/%s/chromedriver_win32.zip'},
+                                     'zip': 'https://chromedriver.storage.googleapis.com/%s/chromedriver_%s.zip'},
                     'uBlock0': {'latest': 'https://github.com/gorhill/uBlock/releases/latest',
                                 'zip': 'https://github.com/gorhill/uBlock/releases/download/%s/uBlock0.chromium.zip'},
                     'websites': {'zip': 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'}}
 
 
-def update_static_resources(exclusions=None):
+def update_static_resources(operating_system, exclusions=None):
     """Resource handler, builds missing directories and calls respective resource update functions.
     
     Default behavior is to look for and create missing folders:
@@ -46,6 +47,10 @@ def update_static_resources(exclusions=None):
     Serial calls to update functions for each resource in 'STATIC_RESOURCES'. Calls are hard-coded.
     
     Args:
+        operating_system (str): System and architecture necessary to download Chromedriver.
+            Without Chromedriver, this whole project is non-functional so there is no point in downloading
+            any other resources without a supported os.
+            
         exclusions (iterable, optional): Any keys in 'STATIC_RESOURCES' that should be ignored when updating.
             Defaults to None. Although 'STATIC_RESOURCES' is hard-coded, 'exclusions' is not checked for 
             extraneous input.
@@ -65,7 +70,7 @@ def update_static_resources(exclusions=None):
             os.makedirs('static/%s' % resource)
 
     if 'chromedriver' not in exclusions:
-        update_chromedriver()
+        update_chromedriver(operating_system)
 
     if 'uBlock0' not in exclusions:
         update_uBlock0()
@@ -74,7 +79,7 @@ def update_static_resources(exclusions=None):
         update_websites()
 
 
-def update_chromedriver():
+def update_chromedriver(formatted_os):
     """Chromedriver version control and download handler.
     
     Looks in 'static/chromedriver' for currently installed versions. Looks at Google's api for latest release.
@@ -83,6 +88,9 @@ def update_chromedriver():
     
     Will throw UserWarning if one of the file names in the zip folder contains either '/' at the beginning, or '..'
     anywhere as this allows for path manipulation and is most likely a sign of a malicious payload.
+    
+    Args:
+        formatted_os (str): Correctly formatted system + architecture. Can be inserted straight into zip url.
     """
     global STATIC_RESOURCES
 
@@ -110,7 +118,7 @@ def update_chromedriver():
         start = time.time()
 
         version_directory = 'static/chromedriver/version_%s' % latest_release
-        zip_url = STATIC_RESOURCES['chromedriver']['zip'] % latest_release
+        zip_url = STATIC_RESOURCES['chromedriver']['zip'] % (latest_release, formatted_os)
         print '\n    Downloading newest release from %s' % zip_url
 
         # retrieve zip file and load into ZipFile object
@@ -250,8 +258,50 @@ def update_websites():
         print '    Condensed %d urls into %d (%.3f%% reduction)' % (pre_scrubbed_count, scrubbed_count, reduction)
 
 
-if __name__ == "__main__":
-    argv = sys.argv[1:]
-    print 'running setup'
+def check_os():
+    """Detect system and architecture of local system.
+    
+    Chromedriver runs platform specific, download urls look like:
+    
+        '... /2.29/chromedriver_win32.zip'
+        '... /2.29/chromedriver_mac32.zip'
+        '... /2.29/chromedriver_linux32.zip'
+        '... /2.29/chromedriver_linux64.zip'
+    
+    Returns:
+        tuple (bool, str, str): The first element is if the detected system and architecture is valid.
+            The second is the properly formatted system and architecture for Chromedriver download url.
+            The third is a 'user-friendly' representation of the system.
+    """
+    operating_system = sys.platform
 
-    update_static_resources()
+    if operating_system.startswith('linux'):
+        # get system architecture, necessary for chromedriver download
+        architecture = platform.architecture()[0].rstrip('bit')
+        return True, 'linux%s' % architecture, 'Linux'
+    elif operating_system == 'win32':
+        return True, 'win32', 'Windows'
+    elif operating_system == 'darwin':
+        return True, 'mac32', 'MacOS'
+    else:
+        return False, '', operating_system
+
+
+if __name__ == "__main__":
+    argv = [arg.upper() for arg in sys.argv[1:]]
+
+    if len(argv) == 0:
+        print 'Running Default Setup\n%s\n' % ('*' * 50)
+        valid, url_format, detected_system = check_os()
+        if valid:
+            print 'Detected operating system \'%s\' is supported' % detected_system
+            update_static_resources(url_format)
+    else:
+        if argv[0] == 'OS':
+            if len(argv) > 1:
+                raise ValueError('\'OS\' operation should not have any trailing arguments')
+            valid, url_format, detected_system = check_os()
+            if valid:
+                print 'VALID: Detected operating system \'%s\' is supported.' % detected_system
+            else:
+                print 'INVALID: Detected operating system \'%s\' is not supported' % detected_system

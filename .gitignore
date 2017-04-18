@@ -13,12 +13,9 @@
 .idea/**/uiDesigner.xml
 
 
-#main program config
-/config/
-
-#Ignore temp and experiment data
-/temp/
+# Ignore temp and experimental data
+/.temp/
 /data/
 
-#Ignore static files, should be downloaded manually
+# Ignore static resources, should be downloaded locally via 'setup.py'
 /static/
