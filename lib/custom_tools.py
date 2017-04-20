@@ -2,6 +2,7 @@ from ConfigParser import ConfigParser
 from os import getcwd, listdir
 from ast import literal_eval
 from os.path import getsize
+import os
 
 from PIL import Image
 
@@ -11,17 +12,27 @@ from PIL import Image
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
 
 
-def load_sites(a, b, website_file_option='LATEST'):
-    available_website_files = listdir('static/websites')
-    if len(available_website_files) == 0:
-        raise IOError('No website list versions found under \'static/websites\'')
-    if website_file_option == 'LATEST':
-        website_path = 'static/websites/%s/websites.csv' % available_website_files[-1]
+def get_path(resource, target, version='LATEST'):
+    if resource not in os.listdir('static'):
+        raise ValueError('Specified resource not in the static directory')
+
+    available_versions = os.listdir('static/' + resource)
+    if len(available_versions) == 0:
+        raise ValueError('No available resources found in the static/' + resource + ' directory')
+
+    relative_path = os.getcwd().replace('\\', '/')
+
+    if version == 'LATEST':
+        return relative_path + '/static/' + resource + '/%s/%s' % (available_versions[-1], target)
     else:
-        if 'version_%s' % website_file_option in available_website_files:
-            website_path = 'static/websites/version_%s/websites.csv' % website_file_option
+        if 'version_%s' % version in available_versions:
+            return relative_path + '/static/' + resource + '/version_%s/%s' % (version, target)
         else:
-            raise IOError('No such directory \'static/websites/version_%s\' found' % website_file_option)
+            raise ValueError('Specified version not found in the static/' + resource + ' directory')
+
+
+def load_sites(a, b):
+    website_path = get_path('websites', target='websites.csv')
     site_list = []
     with open(website_path, 'r') as f:
         for i, line in enumerate(f):

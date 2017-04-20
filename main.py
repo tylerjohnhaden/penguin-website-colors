@@ -14,16 +14,12 @@ timeout = 30
 
 # these are defaults, just putting them here to show where they would be set
 chromedriver_version = 'LATEST'  # if you don't want latest, set to version number, i.e. '2.29'
-uBlock_version = 'LATEST'        # if you don't want latest, set to version number, i.e. '1.12.1'
-website_list = 'LATEST'          # if you don't want latest, set to version number, i.e. '18.04.2017'
-
-
-
+uBlock_version = 'LATEST'  # if you don't want latest, set to version number, i.e. '1.12.1'
 
 # initialization
 print 'Starting thread and driver initialization'
 START = time()
-sites = load_sites(range_of_websites[0], range_of_websites[1], website_list)
+sites = load_sites(0, 1)
 chrome_manager = ChromeManager(0, sites, logging='VERBOSE')
 chrome_manager.load_drivers(number_of_drivers, timeout, chromedriver_version, uBlock_version)
 print 'Initialization time = %f seconds' % (time() - START)
