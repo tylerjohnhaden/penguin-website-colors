@@ -1,4 +1,5 @@
 # TODO: Internet connectivity speed benchmark
+# TODO: Docs
 
 import os
 import shutil
@@ -12,14 +13,13 @@ import lib.custom_tools as custom_tools
 
 
 class Penguin:
-    # TODO: Penguin.set_timeout()
-    # TODO: Penguin.set_headless()
-    # TODO: Penguin.set_ublock()
-    # TODO: @Penguin.chrome_initialization(timeout, headless, ublock)
     # TODO: compute max run time based on timeout and website list, have display of estimated time of completion, etc.
     def __init__(self, chrome_count):
         self.threads = [threading.Thread(target=self.driver_thread) for __ in xrange(chrome_count)]
         self.driver_functionality = None
+        self.page_timeout = 30  # default 30 seconds
+        self.is_headless = True  # default headless mode
+        self.use_ublock = True  # default use ublock
 
         self.processor_thread = threading.Thread(target=self.process_thread)
         self.processor_functionality = None
@@ -46,7 +46,7 @@ class Penguin:
                 if state is False:
                     break
         finally:
-            print 'Maximum processing queue length = %s' % self.max_queue_length
+            pass
 
     def driver(self, funct):
         def wrapper(websites, driver):
@@ -55,18 +55,25 @@ class Penguin:
         self.driver_functionality = wrapper
         return None
 
+    def load_driver(self):
+        options = Options()
+        if self.use_ublock:
+            ublock0_path = custom_tools.get_path('uBlock0', target='uBlock0.chromium')
+            options.add_argument('load-extension=' + ublock0_path)
+        if self.headless:
+            options.add_argument('window-size=1300,750')
+            options.add_argument('window-position=2000,0')
+
+        chromedriver_path = custom_tools.get_path('chromedriver', target='chromedriver.exe')
+        driver = Chrome(executable_path=chromedriver_path, chrome_options=options)
+        driver.set_page_load_timeout(self.page_timeout)
+        return driver
+
     def driver_thread(self):
         if self.driver_functionality is None:
             raise NotImplementedError('Driver functionality must be defined, i.e. @Penguin.driver')
 
-        ublock0_path = custom_tools.get_path('uBlock0', target='uBlock0.chromium')
-        chromedriver_path = custom_tools.get_path('chromedriver', target='chromedriver.exe')
-        options = Options()
-        options.add_argument('load-extension=' + ublock0_path)
-        options.add_argument('window-size=1300,750')
-        options.add_argument('window-position=2000,0')
-        driver = Chrome(executable_path=chromedriver_path, chrome_options=options)
-        driver.set_page_load_timeout(30)
+        driver = self.load_driver()
 
         try:
             for i in xrange(10000000):  # ten million
@@ -79,7 +86,6 @@ class Penguin:
             driver.quit()
 
     def run(self):
-        print "Starting\n"
         start = time()
         if not os.path.exists('.temp'):
             os.makedirs('.temp')
@@ -99,6 +105,15 @@ class Penguin:
         self.processor_thread.join()
 
         return time() - start
+
+    def ublock(self, use_ublock=True):
+        self.use_ublock = use_ublock
+
+    def headless(self, is_headless=True):
+        self.is_headless = is_headless
+
+    def timeout(self, seconds):
+        self.page_timeout = seconds
 
     def save_timeouts(self):
         with open('data/timeouts.csv', 'a') as timeout_log:

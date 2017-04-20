@@ -5,8 +5,6 @@
 from time import time
 from lib.custom_tools import load_sites
 from lib.custom_multithreading import ChromeManager
-import os
-import shutil
 
 number_of_drivers = 2
 range_of_websites = (0, 2)

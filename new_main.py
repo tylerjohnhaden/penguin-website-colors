@@ -11,10 +11,20 @@ from penguin import Penguin
 import lib.custom_tools as custom_tools
 
 if __name__ == "__main__":
-    penguin = Penguin(chrome_count=10)
-    penguin.add_websites(1000, 1200)
+    # instantiate new Penguin object, this should take <1 second because there is no chrome initialization yet
+    penguin = Penguin(chrome_count=5)
 
+    # load websites from csv, by default uses latest available file
+    penguin.add_websites(0, 10)
 
+    penguin.headless()         # DEFAULT
+    # penguin.headless(False)  #    -     display browser in view
+    penguin.ublock()           # DEFAULT
+    # penguin.ublock(False)    #    -     don't use ublock0
+    penguin.timeout(30)        # DEFAULT
+
+    # Decorator, used to define what the driver thread does, must take in the website list and driver object, must
+    # return whether to keep running and if the url timed out
     @penguin.driver
     def functionality(websites, chrome):
         try:
@@ -29,7 +39,7 @@ if __name__ == "__main__":
             return False, None
         return True, None
 
-
+    # defines what the processing thread does, must return whether to keep going and length of files found in .temp
     @penguin.processor
     def this_name_literally_doesnt_matter():
         try:
@@ -51,7 +61,8 @@ if __name__ == "__main__":
             return False, 0
         return True, size
 
-
+    print "Starting"
     elapsed_time = penguin.run()
-    print "Finished in %s seconds" % elapsed_time
+    print "\nFinished in %s seconds" % elapsed_time
+    print "Maximum processing queue length =", penguin.max_queue_length
     penguin.save_timeouts()
