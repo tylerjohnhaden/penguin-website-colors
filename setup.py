@@ -276,7 +276,7 @@ def check_os():
     operating_system = sys.platform
 
     if operating_system.startswith('linux'):
-        # get system architecture, necessary for chromedriver download
+        # get system architecture, necessary only if linux
         architecture = platform.architecture()[0].rstrip('bit')
         return True, 'linux%s' % architecture, 'Linux'
     elif operating_system == 'win32':
@@ -294,14 +294,14 @@ if __name__ == "__main__":
         print 'Running Default Setup\n%s\n' % ('*' * 50)
         valid, url_format, detected_system = check_os()
         if valid:
-            print 'Detected operating system \'%s\' is supported' % detected_system
+            print 'Detected operating system \'%s\' is supported.' % detected_system
             update_static_resources(url_format)
     else:
         if argv[0] == 'OS':
             if len(argv) > 1:
-                raise ValueError('\'OS\' operation should not have any trailing arguments')
+                raise ValueError('\'OS\' operation should not have any trailing arguments.')
             valid, url_format, detected_system = check_os()
             if valid:
                 print 'VALID: Detected operating system \'%s\' is supported.' % detected_system
             else:
-                print 'INVALID: Detected operating system \'%s\' is not supported' % detected_system
+                print 'INVALID: Detected operating system \'%s\' is not supported.' % detected_system

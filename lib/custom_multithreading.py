@@ -1,7 +1,8 @@
 from threading import Thread
 from psutil import cpu_percent
 from time import strftime, sleep
-from os import remove, listdir, getcwd
+import os
+import shutil
 
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import Chrome
@@ -15,6 +16,10 @@ class INDEPENDENT_DataProcessor(Thread):
         Thread.__init__(self)
         self.running = True
         self.working_list = []
+
+        if not os.path.exists('data'):
+            os.makedirs('data')
+
         print "INITIALIZATION of the data processor"
 
     @staticmethod
@@ -24,7 +29,7 @@ class INDEPENDENT_DataProcessor(Thread):
     @staticmethod
     def process_image(image_file, image_name, target_file):
         imagefile_to_dphfile(image_file, image_name, target_file)
-        remove(image_file)
+        os.remove(image_file)
 
     @staticmethod
     def process_source(source_file, image_name, target_file):
@@ -32,15 +37,15 @@ class INDEPENDENT_DataProcessor(Thread):
             with open(target_file, 'w') as out_file:
                 # TODO: Implement Beautiful soup here
                 out_file.write(in_file.read())
-        remove(source_file)
+        os.remove(source_file)
 
     def run(self):
         while self.running:
             sleep(.3)
             for current in self.working_list[:]:
                 self.log('processing ' + current)
-                self.process_image('.temp/%s.png' % current, current, 'data/color/%s.dph' % current)
-                self.process_source('.temp/%s.html' % current, current, 'data/tags/%s.html' % current)
+                self.process_image('.temp/%s.png' % current, current, 'data/%s.dph' % current)
+                self.process_source('.temp/%s.html' % current, current, 'data/%s.html' % current)
                 self.working_list.remove(current)
 
 
@@ -53,6 +58,12 @@ class ChromeManager(Thread):
         self.logging = logging
         self.processorThread = INDEPENDENT_DataProcessor()
 
+        if not os.path.exists('.temp'):
+            os.makedirs('.temp')
+
+    def __del__(self):
+        shutil.rmtree('.temp')
+
     def log(self, message, verbosity='NORMAL'):
         if self.logging == 'OFF':
             return
@@ -62,14 +73,14 @@ class ChromeManager(Thread):
             print strftime("%c"), ": CHROME MANAGER THREAD (" + str(self.chrome_manager_id) + ") :", message
 
     def load_drivers(self, n, timeout, chromedriver_option, uBlock0_option):
-        relative_path = getcwd()
+        relative_path = os.getcwd()
         if len(self.drivers) != 0:
             self.log('Tried loading drivers for a second time')
             return False
         if n < 1:
             raise ValueError('n has to be positive')
 
-        available_uBlock0_versions = listdir('static/uBlock0')
+        available_uBlock0_versions = os.listdir('static/uBlock0')
         if len(available_uBlock0_versions) == 0:
             raise IOError('No uBlock versions found under \'static/uBlock0\'')
         if uBlock0_option == 'LATEST':
@@ -85,11 +96,12 @@ class ChromeManager(Thread):
         options.add_argument('window-size=1300,750')
         options.add_argument('window-position=2000,0')
 
-        available_chromedrivers_versions = listdir('static/chromedriver')
+        available_chromedrivers_versions = os.listdir('static/chromedriver')
         if len(available_chromedrivers_versions) == 0:
             raise IOError('No chromedriver versions found under \'static/chromedriver\'')
         if chromedriver_option == 'LATEST':
-            chromedriver_path = 'static/chromedriver/%s/chromedriver.exe' % available_chromedrivers_versions[-1]
+            chromedriver_path = os.getcwd() + '/static/chromedriver/%s/chromedriver.exe' % \
+                                           available_chromedrivers_versions[-1]
         else:
             if 'version_%s' % chromedriver_option in available_chromedrivers_versions:
                 chromedriver_path = 'static/chromedriver/version_%s/chromedriver.exe' % chromedriver_option
@@ -102,6 +114,7 @@ class ChromeManager(Thread):
         return True
 
     def start_all_drivers(self):
+        print 'starting all drivers'
         for driver in self.drivers:
             driver.start()
         self.processorThread.start()
