@@ -1,5 +1,5 @@
 # penguin-website-colors
-##https://github.com/tylerjohnhaden/penguin-website-colors
+https://github.com/tylerjohnhaden/penguin-website-colors
 ### by: Tyler Haden and Jeet Gajjar
 
 ***
