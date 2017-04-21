@@ -13,4 +13,3 @@ find respective resources from:
  * http://s3.amazonaws.com/alexa-static/top-1m.csv.zip
 3. Main provides our implementation of the library
 
-**Use this software at your own risk**
