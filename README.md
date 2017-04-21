@@ -11,5 +11,5 @@ find respective resources from:
  * https://chromedriver.storage.googleapis.com/index.html
  * https://github.com/gorhill/uBlock/releases/latest
  * http://s3.amazonaws.com/alexa-static/top-1m.csv.zip
-3. Main provides our implementation of the library
+3. Examples/ provides our implementation of the library
 
