@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+# TODO: make chromedriver executable
 # TODO: finish this doc string:
 """The first script to be run in this project.
 

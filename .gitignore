@@ -16,6 +16,9 @@
 # Ignore temp and experimental data
 /.temp/
 /data/
+/examples/.temp/
+/examples/data/
+
 
 # Ignore static resources, should be downloaded locally via 'setup.py'
 /static/
