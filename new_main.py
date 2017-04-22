@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 time.sleep(.1)
             else:
                 time.sleep(.6)
-        except WindowsError:  # TODO: figure out linux equivalent
+        except OSError:  # TODO: figure out linux equivalent
             return False, 0
         return True, size
 
