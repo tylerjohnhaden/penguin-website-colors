@@ -11,13 +11,12 @@ import penguin
 
 penguin.STATIC_RESOURCE_PATH = '../static'
 
-# quit()
-
 if __name__ == "__main__":
     P = penguin.Penguin(chrome_count=2)
 
     # load websites from csv, by default uses latest available file
     P.add_websites(0, 3)
+
 
     # Decorator, used to define what the driver thread does, must take in the website list and driver object, must
     # return whether to keep running and if the url timed out
@@ -28,14 +27,13 @@ if __name__ == "__main__":
             url, name = websites.pop(0)
             try:
                 chrome.get(url)
-
             except TimeoutException:
                 return True, (url, name)
             chrome.save_screenshot('.temp/' + name + '.png')
-
         except IndexError:
             return False, None
         return True, None
+
 
     # defines what the processing thread does, must return whether to keep going and length of files found in .temp
     @P.processor
@@ -54,10 +52,11 @@ if __name__ == "__main__":
             elif size > 4:
                 time.sleep(.1)
             else:
-                time.sleep(.6)
-        except WindowsError:  # TODO: figure out linux equivalent
+                time.sleep(.3)
+        except OSError:  # TODO: figure out linux equivalent
             return False, 0
         return True, size
+
 
     print "Starting"
     elapsed_time = P.run()

@@ -12,6 +12,8 @@ from selenium.webdriver.chrome.options import Options
 
 COMPRESSED_COLOR_SPACE = 262144  # 64 ** 3
 STATIC_RESOURCE_PATH = 'static'
+
+
 # TODO: PROCESSED_DATA_PATH = 'data'
 
 
@@ -131,7 +133,7 @@ class Penguin:
 def get_path(resource, target, version='LATEST'):
     try:
         os.listdir(STATIC_RESOURCE_PATH)
-    except WindowsError:
+    except OSError:
         raise ValueError('\'%s\' is not a valid path to the static resources' % STATIC_RESOURCE_PATH)
 
     if resource not in os.listdir(STATIC_RESOURCE_PATH):
@@ -349,4 +351,3 @@ def imagefile_to_dphfile(image_filename, imagename, dph_filename):
     sorted_pair_list = convert_adjlist_to_pairlist(header, adjacency_list)
     difference_compressed_pair_list = difference_compression(sorted_pair_list)
     write_pair_list_hex(dph_filename, header, difference_compressed_pair_list)
-
