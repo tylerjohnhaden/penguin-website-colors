@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # Decorator, used to define what the driver thread does, must take in the website list and driver object, must
     # return whether to keep running and if the url timed out
     @P.driver
-    def functionality(websites, chrome):
+    def functionality(websites, chrome, timeouts):
         try:
             sys.stdout.write('\r' + str(len(websites)))
             url, name = websites.pop(0)
@@ -33,12 +33,13 @@ if __name__ == "__main__":
                 chrome.get(url)
 
             except TimeoutException:
-                return True, (url, name)
+                timeouts.append((url, name))
+                return True
             chrome.save_screenshot('.temp/' + name + '.png')
 
         except IndexError:
-            return False, None
-        return True, None
+            return False
+        return True
 
     # defines what the processing thread does, must return whether to keep going and length of files found in .temp
     @P.processor
@@ -58,7 +59,7 @@ if __name__ == "__main__":
                 time.sleep(.1)
             else:
                 time.sleep(.6)
-        except OSError:  # TODO: figure out linux equivalent
+        except OSError:
             return False, 0
         return True, size
 

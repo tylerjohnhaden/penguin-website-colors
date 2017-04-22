@@ -54,8 +54,8 @@ class Penguin:
             pass
 
     def driver(self, funct):
-        def wrapper(websites, driver):
-            return funct(websites, driver)
+        def wrapper(websites, driver, timeouts):
+            return funct(websites, driver, timeouts)
 
         self.driver_functionality = wrapper
         return None
@@ -81,11 +81,9 @@ class Penguin:
         driver = self.load_driver()
 
         try:
-            for i in xrange(10000000):  # ten million
-                state, timeout_site = self.driver_functionality(self.websites, driver)
-                if timeout_site is not None:
-                    self.timeout_sites.append(timeout_site)
-                if state is False:
+            for i in xrange(5000000):  # five million, gracefully exits after five million iterations
+                continue_state = self.driver_functionality(self.websites, driver, self.timeout_sites)
+                if continue_state is False:
                     break
         finally:
             driver.quit()

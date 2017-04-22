@@ -3,7 +3,6 @@
 
 import os
 import time
-import sys
 
 from selenium.common.exceptions import TimeoutException
 
@@ -17,22 +16,26 @@ if __name__ == "__main__":
     # load websites from csv, by default uses latest available file
     P.add_websites(0, 3)
 
-
     # Decorator, used to define what the driver thread does, must take in the website list and driver object, must
     # return whether to keep running and if the url timed out
     @P.driver
-    def driver_functionality(websites, chrome):
+    def driver_functionality(websites, chrome, timeouts):
+        # TODO: add logging
         try:
-            sys.stdout.write('\r' + str(len(websites)))
             url, name = websites.pop(0)
-            try:
-                chrome.get(url)
-            except TimeoutException:
-                return True, (url, name)
-            chrome.save_screenshot('.temp/' + name + '.png')
         except IndexError:
-            return False, None
-        return True, None
+            # No more websites to load, False stops thread iteration
+            return False
+
+        try:
+            chrome.get(url)
+        except TimeoutException:
+            # Took too long to fetch website, save url and name in timeout
+            timeouts.append((url, name))
+            return True
+
+        chrome.save_screenshot('.temp/' + name + '.png')
+        return True
 
 
     # defines what the processing thread does, must return whether to keep going and length of files found in .temp
@@ -40,22 +43,18 @@ if __name__ == "__main__":
     def processor_functionality():
         try:
             queue = os.listdir('.temp')
-            for current_file in queue:
-                input_path = '.temp/' + current_file
-                input_name = current_file.rstrip('.png')
-                output_path = 'data/' + input_name + '.dph'
-                penguin.imagefile_to_dphfile(input_path, input_name, output_path)
-                os.remove(input_path)
-            size = len(queue)
-            if size > 8:
-                pass
-            elif size > 4:
-                time.sleep(.1)
-            else:
-                time.sleep(.3)
-        except OSError:  # TODO: figure out linux equivalent
+        except OSError:
+            # .temp directory is gone, False stops thread iteration
             return False, 0
-        return True, size
+
+        for current_file in queue:
+            input_path = '.temp/' + current_file
+            input_name = current_file.rstrip('.png')
+            output_path = 'data/' + input_name + '.dph'
+            penguin.imagefile_to_dphfile(input_path, input_name, output_path)
+            os.remove(input_path)
+        time.sleep(.1)
+        return True, len(queue)
 
 
     print "Starting"
