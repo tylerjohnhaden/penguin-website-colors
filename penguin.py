@@ -20,34 +20,60 @@ STATIC_RESOURCE_PATH = 'static'
 class Penguin:
     # TODO: compute max run time based on timeout and website list, have display of estimated time of completion, etc.
     def __init__(self, chrome_count):
-        self.threads = [threading.Thread(target=self.driver_thread) for __ in xrange(chrome_count)]
+        self.drivers = [threading.Thread(target=self.driver_thread_function) for __ in xrange(chrome_count)]
         self.driver_functionality = None
         self.page_timeout = 30  # default 30 seconds
         self.is_headless = True  # default headless mode
         self.use_ublock = True  # default use ublock
 
-        self.processor_thread = threading.Thread(target=self.process_thread)
-        self.processor_functionality = None
+        self.image_handler_thread = threading.Thread(target=self.image_handler_thread_function)
+        self.image_handler_functionality = None
         self.max_queue_length = 0
+
+        self.source_enabled = False
+        self.source_handler_thread = threading.Thread(target=self.source_handler_thread_function)
+        self.source_handler_functionality = None
 
         self.websites = []
         self.timeout_sites = []
 
-    def processor(self, funct):
+    def image_handler(self, funct):
         def wrapper():
             return funct()
 
-        self.processor_functionality = wrapper
+        self.image_handler_functionality = wrapper
         return None
 
-    def process_thread(self):
-        if self.processor_functionality is None:
-            raise NotImplementedError('Processor functionality must be defined, i.e. @Penguin.processor')
+    def image_handler_thread_function(self):
+        if self.image_handler_functionality is None:
+            raise NotImplementedError('Image Handler functionality must be defined, i.e. @Penguin.image_handler')
 
         try:
             for i in xrange(10000000):  # ten million
-                state, queue_length = self.processor_functionality()
+                state, queue_length = self.image_handler_functionality()
                 self.max_queue_length = max(queue_length, self.max_queue_length)
+                if state is False:
+                    break
+        finally:
+            pass
+
+    def source_handler(self, funct):
+        def wrapper():
+            return funct()
+
+        self.source_handler_functionality = wrapper
+        return None
+
+    def source_handler_thread_function(self):
+        if not self.source_enabled:
+            raise ValueError('Source is not enabled for this client')
+
+        if self.source_handler_functionality is None:
+            raise NotImplementedError('Source Handler functionality must be defined, i.e. @Penguin.source_handler')
+
+        try:
+            for i in xrange(10000000):  # ten million
+                state = self.source_handler_functionality()
                 if state is False:
                     break
         finally:
@@ -74,7 +100,7 @@ class Penguin:
         driver.set_page_load_timeout(self.page_timeout)
         return driver
 
-    def driver_thread(self):
+    def driver_thread_function(self):
         if self.driver_functionality is None:
             raise NotImplementedError('Driver functionality must be defined, i.e. @Penguin.driver')
 
@@ -90,22 +116,41 @@ class Penguin:
 
     def run(self):
         start = time.time()
+
+        locked_source_enabled = self.source_enabled
+
         if not os.path.exists('.temp'):
             os.makedirs('.temp')
+        if locked_source_enabled:
+            if not os.path.exists('.temp/source'):
+                os.makedirs('.temp/source')
+        if not os.path.exists('.temp/image'):
+            os.makedirs('.temp/image')
         if not os.path.exists('data'):
             os.makedirs('data')
 
-        self.processor_thread.start()
-        for t in self.threads:
+        self.image_handler_thread.start()
+
+        if locked_source_enabled:
+            self.source_handler_thread.start()
+
+        for t in self.drivers:
             t.start()
-        for t in self.threads:
+        for t in self.drivers:
             t.join()
 
-        while len(os.listdir('.temp')) != 0:
+        while len(os.listdir('.temp/image')) != 0:
             time.sleep(.1)
-        shutil.rmtree('.temp')
+        shutil.rmtree('.temp/image')
+        self.image_handler_thread.join()
 
-        self.processor_thread.join()
+        if locked_source_enabled:
+            while len(os.listdir('.temp/source')) != 0:
+                time.sleep(.1)
+            shutil.rmtree('.temp/source')
+            self.source_handler_thread.join()
+
+        shutil.rmtree('.temp')
 
         return time.time() - start
 
@@ -117,6 +162,9 @@ class Penguin:
 
     def timeout(self, seconds):
         self.page_timeout = seconds
+
+    def source(self, enable=True):
+        self.source_enabled = enable
 
     def save_timeouts(self):
         with open('data/timeouts.csv', 'a') as timeout_log:

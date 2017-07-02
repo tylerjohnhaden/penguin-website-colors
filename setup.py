@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# TODO: make chromedriver executable
+# TODO: make chromedriver executable on linux systems
 # TODO: finish this doc string:
 """The first script to be run in this project.
 
@@ -8,25 +8,34 @@ If this is the first time running in this directory,
 it should look something like this:
 
     penguin-website-colors/
-        lib/
-            __init__.py
-            custom_multithreading.py
-            custom_tools.py
+        examples/
+            ...
         .gitignore
+        __init__.py
+        license.txt
+        penguin.py
         README.md
         setup.py
 
 In this case, the setup tool will build the necessary
 project structure. At each step, if the directory entity
-is already found, it will be skipped, unless '
+is already found, it will be skipped.
 """
 
+import argparse
 import platform
 import sys
 import os
 import urllib
 import time
 from zipfile import ZipFile
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--check-system', help='Validates system for dependency compatibility', action="store_true")
+parser.add_argument('--no-chromedriver', help='Skips local chromedriver installation', action="store_true")
+parser.add_argument('--no-uBlock0', help='Skips local uBlock0 installation', action="store_true")
+parser.add_argument('--no-websites', help='Skips local website list installation', action="store_true")
+args = parser.parse_args()
 
 STATIC_RESOURCES = {'chromedriver': {'latest': 'https://chromedriver.storage.googleapis.com/LATEST_RELEASE',
                                      'zip': 'https://chromedriver.storage.googleapis.com/%s/chromedriver_%s.zip'},
@@ -289,20 +298,27 @@ def check_os():
 
 
 if __name__ == "__main__":
-    argv = [arg.upper() for arg in sys.argv[1:]]
+    if args.check_system:
+        valid, url_format, detected_system = check_os()
+        if valid:
+            print 'VALID: Detected operating system \'%s\' is supported.' % detected_system
+        else:
+            print 'INVALID: Detected operating system \'%s\' is not supported.' % detected_system
+    else:
+        if args.no_chromedriver and args.no_uBlock0 and args.no_websites:
+            import this
+            quit()
 
-    if len(argv) == 0:
-        print 'Running Default Setup\n%s\n' % ('*' * 50)
+        exclusions = []
+        if args.no_chromedriver:
+            exclusions.append('chromedriver')
+        if args.no_uBlock0:
+            exclusions.append('uBlock0')
+        if args.no_websites:
+            exclusions.append('websites')
+
+        print 'Running Setup\nExclusions = %s\n%s\n' % (str(exclusions), '*' * 50)
         valid, url_format, detected_system = check_os()
         if valid:
             print 'Detected operating system \'%s\' is supported.' % detected_system
-            update_static_resources(url_format)
-    else:
-        if argv[0] == 'OS':
-            if len(argv) > 1:
-                raise ValueError('\'OS\' operation should not have any trailing arguments.')
-            valid, url_format, detected_system = check_os()
-            if valid:
-                print 'VALID: Detected operating system \'%s\' is supported.' % detected_system
-            else:
-                print 'INVALID: Detected operating system \'%s\' is not supported.' % detected_system
+            update_static_resources(url_format, exclusions)
