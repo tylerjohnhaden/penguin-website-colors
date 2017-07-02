@@ -203,7 +203,7 @@ def update_uBlock0():
 def update_websites():
     """Alexa Top Million Websites version control and download handler.
 
-        Looks in 'static/websites' for currently installed versions. Looks at Alexa's api for latest release.
+        Looks in 'static/websites' for currently installed versions. Looks at the date for the 'latest release'.
         If the last local version, ordered by version number in ascending order, matches the latest release, do nothing.
         Otherwise, download zip from Alexa, unzip and place into new version directory 'static/websites/version_%s'.
 
@@ -225,7 +225,7 @@ def update_websites():
         print '    - %s (newest)' % installed_versions[-1]
 
     # latest version is today's date
-    latest_release = time.strftime('%d.%m.%Y')
+    latest_release = time.strftime('%Y.%m.%d')
     print '\n    Latest Release Version:\n    - version_%s' % latest_release
 
     if len(installed_versions) != 0 and 'version_%s' % latest_release == installed_versions[-1]:
