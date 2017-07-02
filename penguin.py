@@ -95,8 +95,11 @@ class Penguin:
             options.add_argument('window-size=1300,750')
             options.add_argument('window-position=2000,0')
 
-        chromedriver_path = get_path('chromedriver', target='chromedriver.exe')
-        driver = Chrome(executable_path=chromedriver_path, chrome_options=options)
+        try:
+            chromedriver_path = get_path('chromedriver', target='chromedriver.exe')
+            driver = Chrome(executable_path=chromedriver_path, chrome_options=options)
+        except ValueError:
+            driver = Chrome(chrome_options=options)
         driver.set_page_load_timeout(self.page_timeout)
         return driver
 

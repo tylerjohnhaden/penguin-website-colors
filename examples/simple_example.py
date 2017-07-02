@@ -3,10 +3,13 @@
 
 import logging
 import os
+import sys
 import time
 
 from selenium.common.exceptions import TimeoutException
 
+# necessary to import from parent directory in non-PyCharm environment
+sys.path.append('..')
 import penguin
 
 penguin.STATIC_RESOURCE_PATH = '../static'
