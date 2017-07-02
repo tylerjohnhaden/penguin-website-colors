@@ -57,8 +57,6 @@ if __name__ == "__main__":
 
         chrome.save_screenshot('.temp/image/' + name + '.png')
         logger.debug('Chrome driving thread saved a screenshot for \'{}\'.'.format(name))
-        # with open('.temp/source/' + name + '.html', 'w') as source_file:
-        #     source_file.write(chrome.page_source.encode('utf-8'))
 
         return True
 
@@ -85,38 +83,9 @@ if __name__ == "__main__":
         time.sleep(.13)
         return True, len(queue)
 
-
-    # @P.source_handler
-    # def source_handler_functionality():
-    #     try:
-    #         queue = os.listdir('.temp/source')
-    #     except OSError:
-    #         # .temp/source directory is gone, False stops thread iteration
-    #         return False
-    #
-    #     for current_file in queue:
-    #         for __ in xrange(100000):
-    #             try:
-    #                 os.rename('.temp/source/' + current_file, 'data/' + current_file)
-    #                 break
-    #             except OSError:
-    #                 try:
-    #                     # If here, then os.rename might have tried to rename a file to an already existing path
-    #                     os.remove('data/' + current_file)
-    #                     # If this succeeds, then there was indeed a path in the way
-    #                 except OSError:
-    #                     # If here, then the problem is that the source file is still being writen to
-    #                     time.sleep(.05)
-    #
-    #     time.sleep(.13)
-    #     return True
-
-    print "Starting"
     logger.info('Beginning client execution.')
     elapsed_time = P.run()
     logger.debug('Image handler thread finished with ' +
                  'a maximum processing queue length of {}.'.format(P.max_queue_length))
     logger.info('Finished client execution in {:.2f} seconds'.format(elapsed_time))
-    print "\nFinished in %.2f seconds" % elapsed_time
-    print "Maximum processing queue length =", P.max_queue_length
     P.save_timeouts()
