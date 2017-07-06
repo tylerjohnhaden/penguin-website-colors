@@ -169,8 +169,8 @@ class Penguin:
     def source(self, enable=True):
         self.source_enabled = enable
 
-    def save_timeouts(self):
-        with open('data/timeouts.csv', 'a') as timeout_log:
+    def save_timeouts(self, file='data/timeouts.csv'):
+        with open(file, 'a') as timeout_log:
             for line in self.timeout_sites:
                 timeout_log.write(line[0] + ', ' + line[1] + '\n')
 
