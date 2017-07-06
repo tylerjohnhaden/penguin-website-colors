@@ -376,9 +376,8 @@ def imagefile_to_dphfile(image_filename, imagename, dph_filename):
     width, height = im.size
     im.close()
 
-    for y in xrange(0, height + 1, 10):
-        for x in xrange(0, width + 1, 10):
-            # print x, y
+    for y in xrange(0, height, 10):
+        for x in xrange(0, width, 10):
             rgb_pixel = pixel[x, y]
             cur_x = x / 10
             cur_y = y / 10
